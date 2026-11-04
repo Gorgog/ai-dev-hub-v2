@@ -1,0 +1,47 @@
+// node --test journal-summary.test.cjs
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { summarize } = require('./journal-summary.cjs');
+// Temp folders of this file, removed after its tests.
+const made = [];
+const mkdtemp = (prefix) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix)); made.push(d); return d; };
+test.after(() => { for (const d of made) fs.rmSync(d, { recursive: true, force: true }); });
+
+function journal(lines) {
+  const p = mkdtemp('js-');
+  fs.mkdirSync(path.join(p, 'memory'));
+  fs.writeFileSync(path.join(p, 'memory', 'rules-guard.log'), lines.map((l) => JSON.stringify(l)).join('\n') + '\nnot json\n');
+  return p;
+}
+const at = (h) => `2026-10-21T${String(h).padStart(2, '0')}:00:00.000Z`;
+
+test('summary: per rule and mode, count, last command; only since the given time; a log rule hit often is a deny candidate', () => {
+  const p = journal([
+    { at: at(1), id: 'cd-no-subshell', mode: 'log', what: 'cd a' },
+    { at: at(2), id: 'cd-no-subshell', mode: 'log', what: 'cd b' },
+    { at: at(3), id: 'cd-no-subshell', mode: 'log', what: 'cd c' },
+    { at: at(3), id: 'push', mode: 'ask', what: 'git push' },
+    { at: at(0), id: 'old', mode: 'log', what: 'x' },
+  ]);
+  const s = summarize(p, { since: at(1), candidateAt: 3 });
+  assert.match(s, /cd-no-subshell · log · ×3 · cd c/);
+  assert.match(s, /push · ask · ×1/);
+  assert.doesNotMatch(s, /old/);
+  assert.match(s, /кандидат в deny: cd-no-subshell/);
+});
+
+test('summary: --since is a moment, whatever its time zone', () => {
+  const p = journal([{ at: '2026-10-21T04:24:00.000Z', id: 'cd-no-subshell', mode: 'log', what: 'cd a' }]);
+  assert.match(summarize(p, { since: '2026-10-21T07:00+03:00' }), /×1/);
+  assert.match(summarize(p, { since: '2026-10-21T08:00+03:00' }), /срабатываний нет/);
+  assert.throws(() => summarize(p, { since: 'вчера' }), /since/);
+});
+
+test('summary: no journal or nothing since — one quiet line', () => {
+  const p = mkdtemp('js-');
+  assert.match(summarize(p, {}), /срабатываний нет/);
+});
