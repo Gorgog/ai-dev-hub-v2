@@ -9,7 +9,7 @@ target: ai-dev-hub-v2 @ v2-19
 Georgy меньше нажимает «Разрешить»: частые безопасные вызовы — в allowlist по журналам, опасное — в deny, без
 широких масок. Новый хаб или машина: на старте сессии хук видит, каких локальных настроек не хватает
 (`CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` по итогу P1, срок хранения журналов, версия плагина = коммит,
-профиль и `dispatch-rules.json` проекта, `checks.json`, `CLAUDE.local.md`, `autoMemoryDirectory`, нет путей
+профиль и `dispatch-rules.json` проекта, `checks.json`, `autoMemoryDirectory`, нет путей
 `ai-dev-hub/` без `-v2` в `projects/**`), и говорит «не хватает N настроек»; `/hub:setup` ставит каждую с
 подтверждением Claude Code. Строка состояния: проект · ветка · контекст % · кэш % · кто держит тяжёлое.
 
