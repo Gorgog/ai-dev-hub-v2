@@ -12,11 +12,11 @@ target: ai-dev-hub-v2 @ v2-16
 
 ## How
 
-- Размер: M (калибровочно; + моки MCP, если выбран M05). Поток S, волна 4.
-- Условие старта: сценарий-ворота показывает пропуски после 15. Какой сценарий — открытый вопрос: M05 с
-  моками MCP (+3–4 дня) или H09 + process-audit (детерминированно, дешевле).
+- Размер: M (калибровочно). Поток S, волна 4.
+- Условие старта: H09 + process-audit по журналам показывают пропуски после 15 (Georgy 05.11). M05 с моками
+  MCP (+3–4 дня) — только если H09 + process-audit пропусков не ловят, а они есть по другим признакам.
 - Касания: `plugin/skills/ship/`, `plugin/skills/dispatch/`, файл шага в состоянии ветки, запись реестра;
-  горячие точки: `dispatch/SKILL.md` (последним в цепочке 15 → 17 → 18 → 16).
+  горячие точки: `dispatch/SKILL.md` (последним в цепочке 15 → 17 → 26 → 18 → 16).
 - Слои вводятся по одному: сначала машина `ship`, `dispatch` — только если пропуски остались.
 - Prior art: `ship` (линейные шаги), доска диспетчера.
 
@@ -27,6 +27,6 @@ target: ai-dev-hub-v2 @ v2-16
 
 ## Verify
 
-`node polygon/run.cjs --level model --only M05 --repeats 3` (или `--level hook --only H09` + process-audit — по ответу)
+`node polygon/run.cjs --level hook --only H09 && tools/process-audit/gates --data ~/hub-data`
 
 ## Evidence
